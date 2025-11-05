@@ -70,7 +70,7 @@ class LlamaModel:
         # Load weights
         self.weight = load_weights(
             self.model_config,
-            torch.bfloat16,
+            torch.float16,
             self.engine_config.use_dummy
         )
 
