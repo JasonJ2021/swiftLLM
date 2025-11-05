@@ -40,7 +40,10 @@ class LlamaModel:
         self.engine_config = engine_config
 
         # Load model config
-        self.model_config = LlamaModelConfig.load_from_model_path(engine_config.model_path)
+        if engine_config.model_path is not None:    
+            self.model_config = LlamaModelConfig.load_from_model_path(engine_config.model_path)
+        else:
+            self.model_config = LlamaModelConfig.load_from_huggingface(engine_config.model_repo_id)
 
         # Weight and RoPE cache
         self.weight = None
@@ -67,8 +70,7 @@ class LlamaModel:
         # Load weights
         self.weight = load_weights(
             self.model_config,
-            torch.float16,
-            self.engine_config.model_path,
+            torch.bfloat16,
             self.engine_config.use_dummy
         )
 

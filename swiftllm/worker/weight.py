@@ -189,15 +189,16 @@ class LlamaWeight(WeightBase):
 def load_weights(
     model_config: LlamaModelConfig,
     dtype: torch.dtype,
-    model_path: str,
     use_dummy: bool = False,
     model_version: str = "auto"
 ) -> LlamaWeight:
     """
     Load weights from a given path
     """
+    model_path = model_config.model_path
+    config_path = model_config.model_config_path
+
     if model_version == "auto":
-        config_path = os.path.join(model_path, "config.json")
         if os.path.exists(config_path):
             with open(config_path, "r", encoding="utf-8") as f:
                 config_data = json.load(f)

@@ -1,5 +1,6 @@
 import dataclasses
 import argparse
+from typing import Optional
 
 @dataclasses.dataclass
 class EngineConfig:
@@ -8,7 +9,8 @@ class EngineConfig:
     """
     
     # Model loading parameters
-    model_path: str
+    model_path: Optional[str]
+    model_repo_id: str
     use_dummy: bool
 
     # PagedAttention-related parameters
@@ -30,8 +32,16 @@ class EngineConfig:
         parser.add_argument(
             "--model-path",
             type=str,
-            required=True,
+            required=False,
             help="Path to the model directory (currently SwiftLLM does not support downloading from HuggingFace, so please download in advance)",
+        )
+        parser.add_argument(
+            "--model",
+            type=str,
+            dest="model_repo_id",
+            default="meta-llama/Llama-3.1-8B",
+            required=False,
+            help="Model name (e.g. Qwen/Qwen3-Next-80B-A3B-Instruct)",
         )
         parser.add_argument(
             "--use-dummy",

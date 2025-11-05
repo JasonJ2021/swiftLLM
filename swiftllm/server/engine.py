@@ -16,7 +16,10 @@ from .scheduler import Scheduler
 class Engine:
     def __init__(self, engine_config: EngineConfig):
         self.engine_config = engine_config
-        self.model_config = LlamaModelConfig.load_from_model_path(engine_config.model_path)
+        if engine_config.model_path is not None:
+            self.model_config = LlamaModelConfig.load_from_model_path(engine_config.model_path)
+        else:
+            self.model_config = LlamaModelConfig.load_from_huggingface(engine_config.model_repo_id)
         self.initialized = False
 
         # The following fields will be created on `init_model()`
