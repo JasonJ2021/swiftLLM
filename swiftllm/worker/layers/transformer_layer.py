@@ -1,5 +1,5 @@
 import torch
-import vllm_flash_attn
+import flash_attn
 
 from swiftllm.model_config import LlamaModelConfig
 from swiftllm.engine_config import EngineConfig
@@ -81,9 +81,9 @@ class LlamaTransformerLayer:
         # Attention
         o = input_embds    # [num_total_tokens, hidden_size]
         if infer_state.num_prefill_seqs > 0:
-            # Here the performance of vLLM's flash attention is better than us,
+            # Here the performance of flash attention is better than us,
             # so use vllm_flash_attn
-            o[:infer_state.num_prefill_tokens, :] = vllm_flash_attn.flash_attn_varlen_func(
+            o[:infer_state.num_prefill_tokens, :] = flash_attn.flash_attn_varlen_func(
                 q[:infer_state.num_prefill_tokens, :, :],
                 k[:infer_state.num_prefill_tokens, :, :],
                 v[:infer_state.num_prefill_tokens, :, :],
