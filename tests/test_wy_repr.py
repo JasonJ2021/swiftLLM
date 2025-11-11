@@ -9,8 +9,8 @@ import triton
 
 from lib import check_is_allclose
 from fla.ops.delta_rule import chunk_delta_rule, fused_chunk_delta_rule, fused_recurrent_delta_rule
-from fla.ops.delta_rule.naive import delta_rule_chunkwise
-from swiftllm.kernel.delta_rule_prefill import reference_torch_delta_rule_prefill
+from fla.ops.delta_rule.wy_fast import fwd_prepare_wy_repr
+from swiftllm.kernel.delta_rule_prefill import reference_torch_delta_rule_prefill, prepare_wu
 
 
 @dataclasses.dataclass
@@ -68,11 +68,10 @@ def run_test(p: TestParam) -> bool:
 
     def run_ans(t: Testcase):
         # TODO: Replace this with OUR Prefil kernel
-        # return reference_torch_delta_rule_prefill(t.q, t.k, t.v, t.beta, output_final_state=True)
+        return prepare_wu(t.k, t.v, t.beta)
         # return chunk_delta_rule(t.q, t.k, t.v, t.beta)
-        return delta_rule_chunkwise(t.q, t.k, t.v, t.beta)
     
-    ans_out, ans_final_state = run_ans(t)
+    w, u = run_ans(t)
     torch.cuda.synchronize()
 
     if p.benchmark:
@@ -81,11 +80,14 @@ def run_test(p: TestParam) -> bool:
     if p.check_correctness:
         torch.cuda.synchronize()
         # TODO: Implement correctness check
-        ref_out, ref_final_state = chunk_delta_rule(t.q, t.k, t.v, t.beta, output_final_state=True)
+        # this _a_ref seems to be accumulated, find out why?
+        # Why we should return A_t
+        w_ref, u_ref, _a_ref = fwd_prepare_wy_repr(t.k, t.v, t.beta, cu_seqlens=None)
+        print(w_ref.dtype, u_ref.dtype)
         torch.cuda.synchronize()
         is_correct = True
-        is_correct &= check_is_allclose("out", ans_out, ref_out)
-        # is_correct &= check_is_allclose("final_state", ans_final_state, ref_final_state)
+        is_correct &= check_is_allclose("u", u, u_ref, abs_tol=8e-4, rel_tol=2.01 / 128, cos_diff_tol=7e-6)
+        is_correct &= check_is_allclose("w", w, w_ref, abs_tol=8e-4, rel_tol=2.01 / 128, cos_diff_tol=7e-6)
         return is_correct
     else:
         return True
@@ -98,7 +100,8 @@ if __name__ == '__main__':
     torch.set_float32_matmul_precision('high')
 
     correctness_cases = [
-        TestParam(b=1, s_q=1024, s_kv=1024, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
+        TestParam(b=1, s_q=64, s_kv=64, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
+        TestParam(b=1, s_q=128, s_kv=128, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
     ]
 
     corner_cases = [
