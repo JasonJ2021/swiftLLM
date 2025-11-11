@@ -71,7 +71,7 @@ def run_test(p: TestParam) -> bool:
         return prepare_wu(t.k, t.v, t.beta)
         # return chunk_delta_rule(t.q, t.k, t.v, t.beta)
     
-    w, u = run_ans(t)
+    w, u, a = run_ans(t)
     torch.cuda.synchronize()
 
     if p.benchmark:
@@ -88,6 +88,7 @@ def run_test(p: TestParam) -> bool:
         is_correct = True
         is_correct &= check_is_allclose("u", u, u_ref, abs_tol=8e-4, rel_tol=2.01 / 128, cos_diff_tol=7e-6)
         is_correct &= check_is_allclose("w", w, w_ref, abs_tol=8e-4, rel_tol=2.01 / 128, cos_diff_tol=7e-6)
+        is_correct &= check_is_allclose("a", a, _a_ref, abs_tol=8e-4, rel_tol=2.01 / 128, cos_diff_tol=7e-6)
         return is_correct
     else:
         return True
@@ -101,7 +102,9 @@ if __name__ == '__main__':
 
     correctness_cases = [
         TestParam(b=1, s_q=64, s_kv=64, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
-        TestParam(b=1, s_q=128, s_kv=128, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
+        TestParam(b=1, s_q=512, s_kv=512, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
+        TestParam(b=1, s_q=1024, s_kv=1024, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
+        # TestParam(b=1, s_q=512, s_kv=512, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
     ]
 
     corner_cases = [
