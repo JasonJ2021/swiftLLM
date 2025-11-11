@@ -120,7 +120,8 @@ def reference_torch_delta_rule_prefill(q: torch.Tensor,  # [b, s_q, h_q, d_qk]
         U_t = U_t.transpose(1, 2) # [b, h_q, chunk_size, d_v]
         W_t = W_t.transpose(1, 2) # [b, h_q, chunk_size, d_qk]
         k_t = k_tile.transpose(1, 2) # [b, h_q, chunk_size, d_qk]
-        u_i = U_t - W_t @ state.to(W_t.dtype)  # [b, h_q, chunk_size, d_v]
-        state = state + (k_t.transpose(-1, -2) @ u_i).to(state.dtype)  # [b, h_q, d_qk, d_v]
+        # Use float32 for state update to maintain precision
+        u_i = U_t.float() - (W_t.float() @ state)  # [b, h_q, chunk_size, d_v]
+        state = state + (k_t.float().transpose(-1, -2) @ u_i)  # [b, h_q, d_qk, d_v]
 
     return output, state

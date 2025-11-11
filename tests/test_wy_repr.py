@@ -104,6 +104,9 @@ if __name__ == '__main__':
         TestParam(b=1, s_q=64, s_kv=64, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
         TestParam(b=1, s_q=512, s_kv=512, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
         TestParam(b=1, s_q=1024, s_kv=1024, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
+        TestParam(b=1, s_q=2048, s_kv=2048, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
+        TestParam(b=1, s_q=4096, s_kv=4096, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
+        TestParam(b=1, s_q=8192, s_kv=8192, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
         # TestParam(b=1, s_q=512, s_kv=512, h_q=128, h_kv=128, d_qk=128, d_v=128, seed=0, check_correctness=True, benchmark=False),
     ]
 
